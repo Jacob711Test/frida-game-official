@@ -14,7 +14,7 @@
         canvas { 
             display: block; 
             margin: 0 auto; 
-            background-color: #f5f5f5; /* Light background */
+            background-color: #f5f5f5; 
             border: 1px solid black; 
         }
         #score {
@@ -55,9 +55,13 @@
         canvas.width = 800;
         canvas.height = 600;
 
-        // Load deer image
+        // Make sure the deer image is hosted correctly (use a direct link to a working image URL)
         let deerImage = new Image();
-        deerImage.src = "https://your-image-link.com/deer-image.png";  // Replace with actual URL for the deer image
+        deerImage.src = "https://www.example.com/path-to-deer-image.png";  // Replace with your own image URL.
+
+        deerImage.onload = function() {
+            gameLoop(); // Start the game loop after the image loads.
+        };
 
         // Game state variables
         let score = 0;
@@ -123,9 +127,6 @@
             document.getElementById("score").textContent = `Score: ${score}`; // Update score display
             requestAnimationFrame(gameLoop); // Keep the game loop running
         }
-
-        // Start the game loop
-        gameLoop();
 
         // Handle user shooting action (clicking on the canvas)
         window.addEventListener("click", function(event) {
