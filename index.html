@@ -5,22 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Frida's Wounded Deer Game</title>
     <style>
-        body { 
-            margin: 0; 
-            overflow: hidden; 
-            background-color: #f0f0f0; 
-            font-family: Arial, sans-serif; 
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #f4f4f4;
         }
-        canvas { 
-            display: block; 
-            margin: 0 auto; 
-            background-color: #f5f5f5; 
-            border: 1px solid black; 
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background-color: #f5f5f5;
+            border: 1px solid black;
         }
         #score {
             position: absolute;
-            top: 10px;
-            left: 10px;
+            top: 20px;
+            left: 20px;
             font-size: 24px;
             color: black;
             font-weight: bold;
@@ -65,6 +65,7 @@
         const deerImage = new Image();
         deerImage.src = 'https://upload.wikimedia.org/wikipedia/commons/7/75/Frida_Kahlo_-_The_Wounded_Deer_%28The_Sharp_Thorn_Necklace%29.jpg';  // Example image, replace with your own
 
+        // Bullet class to create bullets
         class Bullet {
             constructor(x, y) {
                 this.x = x;
@@ -84,9 +85,10 @@
             }
         }
 
+        // Deer class for the deer image
         class Deer {
             constructor() {
-                this.x = Math.random() * canvas.width;
+                this.x = Math.random() * (canvas.width - 80);
                 this.y = Math.random() * (canvas.height - 100);
                 this.width = 80;
                 this.height = 80;
@@ -97,7 +99,7 @@
             }
 
             reset() {
-                this.x = Math.random() * canvas.width;
+                this.x = Math.random() * (canvas.width - 80);
                 this.y = Math.random() * (canvas.height - 100);
             }
         }
@@ -159,7 +161,7 @@
         function unlockPage() {
             const username = document.getElementById("usernameInput").value;
             if (username) {
-                window.location.href = `https://elmonx.com/${username}/purchase`;
+                window.location.href = `https://elmonx.com/${username}/purchase`; // Example URL, replace with your real URL
             } else {
                 alert("Please enter a valid username.");
             }
