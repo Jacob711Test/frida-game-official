@@ -3,40 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Wounded Deer Shooter Game</title>
+    <title>Frida's Wounded Deer Game</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #f0f0f0; }
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background-color: #f0f0f0; 
+            font-family: Arial, sans-serif; 
+        }
         canvas { 
             display: block; 
             margin: 0 auto; 
-            background-color: #d3d3d3; /* Temporary background color for testing */
-            border: 1px solid black;   /* Add a border around the canvas */
+            background-color: #f5f5f5; /* Light background */
+            border: 1px solid black; 
         }
-        #usernameForm { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; text-align: center; font-family: Arial, sans-serif; }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            color: black;
+            font-weight: bold;
+        }
+        #usernameForm {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            text-align: center;
+        }
+        #usernameForm input, #usernameForm button {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
+    <div id="score">Score: 0</div>
     <canvas id="gameCanvas"></canvas>
     <div id="usernameForm">
         <h3>Enter your Elmonx Username to Unlock Purchase</h3>
         <input type="text" id="usernameInput" placeholder="Username" />
         <button onclick="unlockPage()">Unlock Purchase</button>
     </div>
+
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
         canvas.width = 800;
         canvas.height = 600;
 
-        // Game variables
+        let deerImage = new Image();
+        deerImage.src = "https://your-image-link.com/deer-image.png";  // Add actual URL to the deer image here
         let deerX = Math.random() * canvas.width;
         let deerY = Math.random() * canvas.height / 2;
         let deerSpeed = 2;
-        let bullets = [];
         let score = 0;
+        let bullets = [];
         let gameOver = false;
 
-        // Bullet class
         class Bullet {
             constructor(x, y) {
                 this.x = x;
@@ -45,31 +72,31 @@
                 this.height = 15;
                 this.speed = 4;
             }
+
             update() {
                 this.y -= this.speed;
             }
+
             draw() {
                 ctx.fillStyle = "red";
                 ctx.fillRect(this.x, this.y, this.width, this.height);
             }
         }
 
-        // Deer class (using a placeholder instead of an image)
         class Deer {
             constructor() {
-                this.width = 50;
-                this.height = 50;
+                this.width = 100;
+                this.height = 75;
                 this.x = deerX;
                 this.y = deerY;
                 this.speed = deerSpeed;
-                this.wounded = false;  // Flag to mark the deer as wounded
+                this.wounded = false;
             }
 
             move() {
-                this.x += Math.random() * 4 - 2; // Random move (left or right)
-                this.y += Math.random() * 4 - 2; // Random move (up or down)
+                this.x += Math.random() * 4 - 2;
+                this.y += Math.random() * 4 - 2;
 
-                // Keep the deer within bounds
                 if (this.x < 0) this.x = 0;
                 if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
                 if (this.y < 0) this.y = 0;
@@ -78,20 +105,17 @@
 
             draw() {
                 if (this.wounded) {
-                    // Wounded state - Red color for simplicity
-                    ctx.fillStyle = "red"; 
+                    // Mark as wounded (red tint for now)
+                    ctx.fillStyle = "rgba(255, 0, 0, 0.6)";
                     ctx.fillRect(this.x, this.y, this.width, this.height);
                 } else {
-                    // Draw the deer as a green square for testing purposes
-                    ctx.fillStyle = "green"; 
-                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                    ctx.drawImage(deerImage, this.x, this.y, this.width, this.height);
                 }
             }
         }
 
         const deer = new Deer();
 
-        // Game loop function
         function gameLoop() {
             if (gameOver) {
                 showUsernameForm();
@@ -101,41 +125,35 @@
             deer.move();
             deer.draw();
 
-            // Update and draw bullets
             for (let i = 0; i < bullets.length; i++) {
                 bullets[i].update();
                 bullets[i].draw();
-
-                // Check if bullet goes off screen
                 if (bullets[i].y < 0) {
                     bullets.splice(i, 1);
                     i--;
                 }
             }
 
-            // Detect bullet hitting the deer
             for (let i = 0; i < bullets.length; i++) {
                 if (bullets[i].x < deer.x + deer.width && bullets[i].x + bullets[i].width > deer.x &&
                     bullets[i].y < deer.y + deer.height && bullets[i].y + bullets[i].height > deer.y) {
                     score++;
-                    bullets.splice(i, 1); // Remove bullet
+                    bullets.splice(i, 1); 
                     i--;
-                    // Mark the deer as wounded
                     deer.wounded = true;
-                    // Move the deer to a new random position after being hit
                     deer.x = Math.random() * canvas.width;
                     deer.y = Math.random() * canvas.height / 2;
-                    setTimeout(() => deer.wounded = false, 1000);  // Deer is "wounded" for 1 second
+
+                    setTimeout(() => deer.wounded = false, 1000); // Deer is "wounded" for 1 second
+                    document.getElementById('score').textContent = `Score: ${score}`;
                 }
             }
 
             requestAnimationFrame(gameLoop);
         }
 
-        // Start game
         gameLoop();
 
-        // Handle user input (shooting)
         window.addEventListener("click", function(event) {
             if (!gameOver) {
                 const bullet = new Bullet(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
@@ -143,12 +161,10 @@
             }
         });
 
-        // Show the username input form once the game is over
         function showUsernameForm() {
             document.getElementById("usernameForm").style.display = "block";
         }
 
-        // Handle the username input to unlock the purchase page
         function unlockPage() {
             const username = document.getElementById("usernameInput").value;
             if (username) {
