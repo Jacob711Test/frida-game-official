@@ -31,6 +31,12 @@
         let score = 0;
         let gameOver = false;
 
+        // Deer Image for Wounded Deer
+        const deerImage = new Image();
+        deerImage.src = "https://example.com/deer-image.png";  // Replace with actual image URL
+
+        let deerWounded = false; // Flag to mark when the deer is wounded
+
         // Bullet class
         class Bullet {
             constructor(x, y) {
@@ -57,6 +63,7 @@
                 this.x = deerX;
                 this.y = deerY;
                 this.speed = deerSpeed;
+                this.wounded = deerWounded;
             }
 
             move() {
@@ -71,8 +78,12 @@
             }
 
             draw() {
-                ctx.fillStyle = "green";
-                ctx.fillRect(this.x, this.y, this.width, this.height);
+                if (this.wounded) {
+                    ctx.fillStyle = "red"; // Indicate wounded state
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                } else {
+                    ctx.drawImage(deerImage, this.x, this.y, this.width, this.height);
+                }
             }
         }
 
@@ -107,9 +118,12 @@
                     score++;
                     bullets.splice(i, 1); // Remove bullet
                     i--;
+                    // Mark the deer as wounded
+                    deer.wounded = true;
                     // Move the deer to a new random position after being hit
                     deer.x = Math.random() * canvas.width;
                     deer.y = Math.random() * canvas.height / 2;
+                    setTimeout(() => deer.wounded = false, 1000);  // Deer is "wounded" for 1 second
                 }
             }
 
