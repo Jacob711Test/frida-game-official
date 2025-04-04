@@ -41,25 +41,16 @@
 
         let score = 0;
         let gameOver = false;
-        let deerImages = [];
-        let soundEffects = {
-            shoot: new Audio('https://www.soundjay.com/button/beep-07.wav'),
-            hit: new Audio('https://www.soundjay.com/button/wood-click-2.wav'),
-        };
 
-        // Load deer images (you can replace these URLs with actual deer images)
-        let deerImage = new Image();
-        deerImage.src = 'https://upload.wikimedia.org/wikipedia/commons/e/ec/Deer_in_woods.jpg'; // replace with deer image URL
-        deerImages.push(deerImage);
+        const deerImage = new Image();
+        deerImage.src = 'https://www.clipartkey.com/mpngs/m/85-859482_deer-clipart-png-deer-image-png.png'; // Deer image URL
 
-        // Shooter setup
         const shooter = {
             x: canvas.width / 2,
             y: canvas.height - 60,
             width: 40,
             height: 40,
             color: 'blue',
-            shoot: false,
             bullet: {
                 x: null,
                 y: null,
@@ -84,9 +75,8 @@
             }
         };
 
-        // Deer setup
         const deerArray = [];
-        const numDeer = 5;
+        const numDeer = 3;
 
         function createDeer() {
             for (let i = 0; i < numDeer; i++) {
@@ -97,7 +87,6 @@
                     height: 80,
                     speed: 2 + Math.random() * 2,
                     isHit: false,
-                    image: deerImage,
                     move: function () {
                         this.x += this.speed;
                         if (this.x > canvas.width) {
@@ -106,7 +95,7 @@
                         }
                     },
                     draw: function () {
-                        ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+                        ctx.drawImage(deerImage, this.x, this.y, this.width, this.height);
                         if (this.isHit) {
                             ctx.fillStyle = 'red'; // Indicate the deer is wounded
                             ctx.fillRect(this.x, this.y + this.height, this.width, 10); // Wound mark
@@ -125,7 +114,6 @@
                     shooter.bullet.x + shooter.bullet.width > deer.x) {
                     deer.isHit = true;
                     score += 10;
-                    soundEffects.hit.play();
                     deer.x = Math.random() * canvas.width;
                     deer.y = Math.random() * canvas.height;
                     shooter.bullet.y = shooter.y;
@@ -177,7 +165,6 @@
                 shooter.shoot = true;
                 shooter.bullet.y = shooter.y;
                 shooter.bullet.x = shooter.x + shooter.width / 2 - shooter.bullet.width / 2;
-                soundEffects.shoot.play();
             }
         }
 
