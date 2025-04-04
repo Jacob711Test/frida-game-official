@@ -6,7 +6,12 @@
     <title>The Wounded Deer Shooter Game</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #f0f0f0; }
-        canvas { display: block; margin: 0 auto; }
+        canvas { 
+            display: block; 
+            margin: 0 auto; 
+            background-color: #d3d3d3; /* Temporary background color for testing */
+            border: 1px solid black;   /* Add a border around the canvas */
+        }
         #usernameForm { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; text-align: center; font-family: Arial, sans-serif; }
     </style>
 </head>
@@ -22,7 +27,7 @@
         const ctx = canvas.getContext("2d");
         canvas.width = 800;
         canvas.height = 600;
-        
+
         // Game variables
         let deerX = Math.random() * canvas.width;
         let deerY = Math.random() * canvas.height / 2;
@@ -30,12 +35,6 @@
         let bullets = [];
         let score = 0;
         let gameOver = false;
-
-        // Deer Image for Wounded Deer
-        const deerImage = new Image();
-        deerImage.src = "https://example.com/deer-image.png";  // Replace with actual image URL
-
-        let deerWounded = false; // Flag to mark when the deer is wounded
 
         // Bullet class
         class Bullet {
@@ -55,7 +54,7 @@
             }
         }
 
-        // Deer class
+        // Deer class (using a placeholder instead of an image)
         class Deer {
             constructor() {
                 this.width = 50;
@@ -63,7 +62,7 @@
                 this.x = deerX;
                 this.y = deerY;
                 this.speed = deerSpeed;
-                this.wounded = deerWounded;
+                this.wounded = false;  // Flag to mark the deer as wounded
             }
 
             move() {
@@ -79,10 +78,13 @@
 
             draw() {
                 if (this.wounded) {
-                    ctx.fillStyle = "red"; // Indicate wounded state
+                    // Wounded state - Red color for simplicity
+                    ctx.fillStyle = "red"; 
                     ctx.fillRect(this.x, this.y, this.width, this.height);
                 } else {
-                    ctx.drawImage(deerImage, this.x, this.y, this.width, this.height);
+                    // Draw the deer as a green square for testing purposes
+                    ctx.fillStyle = "green"; 
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
                 }
             }
         }
