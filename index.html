@@ -109,7 +109,12 @@
                     ctx.fillStyle = "rgba(255, 0, 0, 0.6)";
                     ctx.fillRect(this.x, this.y, this.width, this.height);
                 } else {
-                    ctx.drawImage(deerImage, this.x, this.y, this.width, this.height);
+                    // Check if image is loaded before drawing
+                    if (deerImage.complete) {
+                        ctx.drawImage(deerImage, this.x, this.y, this.width, this.height);
+                    } else {
+                        console.log("Deer image is not loaded yet");
+                    }
                 }
             }
         }
