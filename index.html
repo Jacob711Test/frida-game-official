@@ -3,172 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Frida's Wounded Deer Game</title>
+    <title>Frida's Wounded Deer Shooter Game</title>
     <style>
         body {
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background-color: #f4f4f4;
+            background-color: #f0f0f0;
         }
+
         canvas {
             display: block;
-            margin: 0 auto;
-            background-color: #f5f5f5;
-            border: 1px solid black;
+            background: #fff;
         }
-        #score {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 24px;
-            color: black;
-            font-weight: bold;
-        }
-        #usernameForm {
+
+        .game-over {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            font-size: 36px;
+            color: red;
+            font-family: Arial, sans-serif;
             display: none;
-            text-align: center;
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-        }
-        #usernameForm input, #usernameForm button {
-            padding: 10px;
-            margin: 10px;
-            font-size: 16px;
         }
     </style>
 </head>
 <body>
-    <div id="score">Score: 0</div>
+    <div class="game-over">Game Over!</div>
     <canvas id="gameCanvas"></canvas>
-    <div id="usernameForm">
-        <h3>Enter your Elmonx Username to Unlock Purchase</h3>
-        <input type="text" id="usernameInput" placeholder="Username" />
-        <button onclick="unlockPage()">Unlock Purchase</button>
-    </div>
 
     <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
-        canvas.width = 800;
-        canvas.height = 600;
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
         let score = 0;
         let gameOver = false;
-        const bullets = [];
-        const deerImage = new Image();
-        deerImage.src = 'https://upload.wikimedia.org/wikipedia/commons/7/75/Frida_Kahlo_-_The_Wounded_Deer_%28The_Sharp_Thorn_Necklace%29.jpg';  // Example image, replace with your own
 
-        // Bullet class to create bullets
-        class Bullet {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.width = 5;
-                this.height = 15;
-                this.speed = 4;
-            }
-
-            update() {
-                this.y -= this.speed;
-            }
-
-            draw() {
-                ctx.fillStyle = "red";
+        const deer = {
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            width: 50,
+            height: 50,
+            speed: 2,
+            move: function () {
+                this.x += this.speed;
+                if (this.x > canvas.width) {
+                    this.x = -this.width;
+                    this.y = Math.random() * canvas.height;
+                }
+            },
+            draw: function () {
+                ctx.fillStyle = 'brown';
                 ctx.fillRect(this.x, this.y, this.width, this.height);
             }
+        };
+
+        const shooter = {
+            x: canvas.width / 2,
+            y: canvas.height - 60,
+            width: 40,
+            height: 40,
+            color: 'blue',
+            shoot: false,
+            bullet: {
+                x: null,
+                y: null,
+                width: 5,
+                height: 15,
+                speed: 5,
+                move: function () {
+                    if (this.y < 0) {
+                        this.y = shooter.y;
+                        this.x = shooter.x + shooter.width / 2 - this.width / 2;
+                    }
+                    this.y -= this.speed;
+                },
+                draw: function () {
+                    ctx.fillStyle = 'red';
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                }
+            },
+            draw: function () {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+        };
+
+        function detectCollision() {
+            if (shooter.bullet.y < deer.y + deer.height &&
+                shooter.bullet.y + shooter.bullet.height > deer.y &&
+                shooter.bullet.x < deer.x + deer.width &&
+                shooter.bullet.x + shooter.bullet.width > deer.x) {
+                score += 10;
+                deer.x = Math.random() * canvas.width;
+                deer.y = Math.random() * canvas.height;
+                shooter.bullet.y = shooter.y;
+                return true;
+            }
+            return false;
         }
 
-        // Deer class for the deer image
-        class Deer {
-            constructor() {
-                this.x = Math.random() * (canvas.width - 80);
-                this.y = Math.random() * (canvas.height - 100);
-                this.width = 80;
-                this.height = 80;
-            }
-
-            draw() {
-                ctx.drawImage(deerImage, this.x, this.y, this.width, this.height);
-            }
-
-            reset() {
-                this.x = Math.random() * (canvas.width - 80);
-                this.y = Math.random() * (canvas.height - 100);
-            }
-        }
-
-        const deer = new Deer();
-
-        function gameLoop() {
-            if (gameOver) {
-                showUsernameForm();
-                return;
-            }
+        function update() {
+            if (gameOver) return;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            deer.move();
             deer.draw();
 
-            // Update and draw bullets
-            for (let i = 0; i < bullets.length; i++) {
-                bullets[i].update();
-                bullets[i].draw();
-
-                // Check if bullet hits the deer
-                if (bullets[i].x < deer.x + deer.width &&
-                    bullets[i].x + bullets[i].width > deer.x &&
-                    bullets[i].y < deer.y + deer.height &&
-                    bullets[i].y + bullets[i].height > deer.y) {
-
-                    score++;
-                    bullets.splice(i, 1); // Remove bullet
-                    deer.reset();
-                    i--; // Adjust index after removal
-                }
-
-                // Remove bullet if it goes out of bounds
-                if (bullets[i].y < 0) {
-                    bullets.splice(i, 1);
-                    i--;
+            shooter.draw();
+            if (shooter.shoot) {
+                shooter.bullet.move();
+                shooter.bullet.draw();
+                if (detectCollision()) {
+                    shooter.shoot = false;
                 }
             }
 
-            // Update the score
-            document.getElementById("score").textContent = `Score: ${score}`;
-            requestAnimationFrame(gameLoop);
+            if (score >= 100) {
+                gameOver = true;
+                document.querySelector('.game-over').style.display = 'block';
+            }
+
+            requestAnimationFrame(update);
         }
 
-        // Handle shooting
-        window.addEventListener("click", function(event) {
+        function onMouseMove(e) {
             if (!gameOver) {
-                const bullet = new Bullet(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
-                bullets.push(bullet);
-            }
-        });
-
-        // Show the username input form after the game ends
-        function showUsernameForm() {
-            document.getElementById("usernameForm").style.display = "block";
-        }
-
-        // Handle unlocking the purchase page
-        function unlockPage() {
-            const username = document.getElementById("usernameInput").value;
-            if (username) {
-                window.location.href = `https://elmonx.com/${username}/purchase`; // Example URL, replace with your real URL
-            } else {
-                alert("Please enter a valid username.");
+                shooter.x = e.clientX - shooter.width / 2;
             }
         }
 
-        // Start the game
-        gameLoop();
+        function onClick() {
+            if (!gameOver && !shooter.shoot) {
+                shooter.shoot = true;
+                shooter.bullet.y = shooter.y;
+                shooter.bullet.x = shooter.x + shooter.width / 2 - shooter.bullet.width / 2;
+            }
+        }
+
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('click', onClick);
+
+        update();
     </script>
 </body>
 </html>
