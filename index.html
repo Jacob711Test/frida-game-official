@@ -55,15 +55,19 @@
         canvas.width = 800;
         canvas.height = 600;
 
+        // Load deer image
         let deerImage = new Image();
-        deerImage.src = "https://your-image-link.com/deer-image.png";  // Add actual URL to the deer image here
+        deerImage.src = "https://your-image-link.com/deer-image.png";  // Replace with actual URL for the deer image
+
+        // Game state variables
+        let score = 0;
+        let gameOver = false;
         let deerX = Math.random() * canvas.width;
         let deerY = Math.random() * canvas.height / 2;
-        let deerSpeed = 2;
-        let score = 0;
+        let deerSpeed = 1;
         let bullets = [];
-        let gameOver = false;
 
+        // Bullet class to track shooting
         class Bullet {
             constructor(x, y) {
                 this.x = x;
@@ -72,104 +76,71 @@
                 this.height = 15;
                 this.speed = 4;
             }
-
             update() {
                 this.y -= this.speed;
             }
-
             draw() {
                 ctx.fillStyle = "red";
                 ctx.fillRect(this.x, this.y, this.width, this.height);
             }
         }
 
-        class Deer {
-            constructor() {
-                this.width = 100;
-                this.height = 75;
-                this.x = deerX;
-                this.y = deerY;
-                this.speed = deerSpeed;
-                this.wounded = false;
-            }
-
-            move() {
-                this.x += Math.random() * 4 - 2;
-                this.y += Math.random() * 4 - 2;
-
-                if (this.x < 0) this.x = 0;
-                if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
-                if (this.y < 0) this.y = 0;
-                if (this.y + this.height > canvas.height) this.y = canvas.height - this.height;
-            }
-
-            draw() {
-                if (this.wounded) {
-                    // Mark as wounded (red tint for now)
-                    ctx.fillStyle = "rgba(255, 0, 0, 0.6)";
-                    ctx.fillRect(this.x, this.y, this.width, this.height);
-                } else {
-                    // Check if image is loaded before drawing
-                    if (deerImage.complete) {
-                        ctx.drawImage(deerImage, this.x, this.y, this.width, this.height);
-                    } else {
-                        console.log("Deer image is not loaded yet");
-                    }
-                }
-            }
-        }
-
-        const deer = new Deer();
-
+        // Game loop function
         function gameLoop() {
             if (gameOver) {
                 showUsernameForm();
                 return;
             }
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            deer.move();
-            deer.draw();
 
+            ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear canvas
+
+            // Draw and update deer
+            ctx.drawImage(deerImage, deerX, deerY, 50, 50);  // Draw the deer image at current position
+
+            // Update and draw bullets
             for (let i = 0; i < bullets.length; i++) {
                 bullets[i].update();
                 bullets[i].draw();
-                if (bullets[i].y < 0) {
+                if (bullets[i].y < 0) { // Remove bullets that go out of screen
                     bullets.splice(i, 1);
                     i--;
                 }
             }
 
+            // Check for collision with the deer
             for (let i = 0; i < bullets.length; i++) {
-                if (bullets[i].x < deer.x + deer.width && bullets[i].x + bullets[i].width > deer.x &&
-                    bullets[i].y < deer.y + deer.height && bullets[i].y + bullets[i].height > deer.y) {
+                if (bullets[i].x < deerX + 50 && bullets[i].x + bullets[i].width > deerX &&
+                    bullets[i].y < deerY + 50 && bullets[i].y + bullets[i].height > deerY) {
                     score++;
-                    bullets.splice(i, 1); 
+                    bullets.splice(i, 1);  // Remove bullet after collision
                     i--;
-                    deer.wounded = true;
-                    deer.x = Math.random() * canvas.width;
-                    deer.y = Math.random() * canvas.height / 2;
-
-                    setTimeout(() => deer.wounded = false, 1000); // Deer is "wounded" for 1 second
-                    document.getElementById('score').textContent = `Score: ${score}`;
+                    // Move deer to a new position after being hit
+                    deerX = Math.random() * canvas.width;
+                    deerY = Math.random() * canvas.height / 2;
                 }
             }
 
-            requestAnimationFrame(gameLoop);
+            document.getElementById("score").textContent = `Score: ${score}`; // Update score display
+            requestAnimationFrame(gameLoop); // Keep the game loop running
         }
 
+        // Start the game loop
         gameLoop();
 
+        // Handle user shooting action (clicking on the canvas)
         window.addEventListener("click", function(event) {
             if (!gameOver) {
                 const bullet = new Bullet(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
-                bullets.push(bullet);
+                bullets.push(bullet);  // Add new bullet to the array
             }
         });
 
+        // Show the username input form once the game is over
         function showUsernameForm() {
             document.getElementById("usernameForm").style.display = "block";
         }
 
+        // Handle the username input to unlock the purchase page
         function unlockPage() {
             const username = document.getElementById("usernameInput").value;
             if (username) {
