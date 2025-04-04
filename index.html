@@ -32,6 +32,10 @@
             transform: translate(-50%, -50%);
             display: none;
             text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
         }
         #usernameForm input, #usernameForm button {
             padding: 10px;
@@ -55,21 +59,12 @@
         canvas.width = 800;
         canvas.height = 600;
 
-        // Deer Image (Base64 Encoded)
-        const deerImageDataUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8s1R6AAADhklEQVRIDbVY0W3bMBiGvsJdxaJ4eUjYq1ZdBdcfne+szHntmNf2g58uKN6QeW5eE5ZXN/1Ob7ubS5mf71dzmJ4dPpfmm0+9M2OtsddAzzrr89tXofBFmf/Fm7+gfa3n/f95sCCek0fljvfheNk4bZv1pnV/JTeCZEqIu3Iadp0TZgEjISpuDoJgV6bo/M+eA3dS+JY0PSTwqlzls9l6wDPlKb/fU4TRbjd/gW57frHKlxd8xHq13QeBKl4z0muKKuA3g0zFjCj9DlIuKMdbq1elJr40u29q1fnd6YqeInwMFhfxnX9OFz2tWq0J6mGy35kUg4eCk/qKX/eHYcG+/gkznS81N2A25mv0kl7Wv8QEsUBUbN0jqOxqHo8LQ+zAA8O1RznPEdeQsZPMw2ORmj4uOGi9PslwEOw6PT2nI1k6gTthcdxtMrmzlm7SgP5R9fBrqVf8iO9/72k1idQ0D1h7DsZ2OFe7kwISq4ok6upLNTLf67ScTfdwOfOcll1mHe7hSkNzHXmA7VwS8vD8Vnfm6MRNT9ZlzwPkw6G9PC+mdwF9oaHngZjtfdHnY0XJm8XB+pg5qB5PRuq36zP9tHp67MZoe+p/Dk4Sc0jBZ9tm98jAor6jxwczflHVl0g8OfDhFkyhMyAXgIxf+ywZesgA2Uw5E0Jl1K3/dUn6Vq1WyLPKmN+ZZMcOG8JuwGoqQXOHwGeNptfBhNRoC4ANmdzpxwX7Zy9tM2qDl0wLs5x+DJzoR2Mb+NlFwBa8yA9YyYHZycuDqsBw6xgxErbVfNKPN8A4wX3ab5S5jcf7UqtclHFeGVqg5ExRbtmEuX2QIKtuvccAZ5uI7gknlm9of06er/2zx2rK5Mm9gggg5Hdfy0pxozr4WwFYfnF7OSxd+pp3uhngF80tNRwBRzjtTq6Y1cdkrmm29y5u53OChj/JnAz85IA88bi9D/4Q0ndid9hn9UeLf5ODab0tx2X7T00e5I4wPCj8dtxt5nv8r7KpFfPE6yGTvnUQztg+LBW4+mcG93Z5ozfyI0djp7ZDtVztpgdMvC8FXp7nMroKXrqzAGzxxzJbCkfiwOslr69albbmFhJ6CgSg==";
-
-        const deerImage = new Image();
-        deerImage.src = deerImageDataUrl;
-
-        // Game variables
         let score = 0;
         let gameOver = false;
-        let deerX = Math.random() * canvas.width;
-        let deerY = Math.random() * canvas.height / 2;
-        let deerSpeed = 1;
-        let bullets = [];
+        const bullets = [];
+        const deerImage = new Image();
+        deerImage.src = 'https://upload.wikimedia.org/wikipedia/commons/7/75/Frida_Kahlo_-_The_Wounded_Deer_%28The_Sharp_Thorn_Necklace%29.jpg';  // Example image, replace with your own
 
-        // Bullet class
         class Bullet {
             constructor(x, y) {
                 this.x = x;
@@ -78,48 +73,72 @@
                 this.height = 15;
                 this.speed = 4;
             }
+
             update() {
                 this.y -= this.speed;
             }
+
             draw() {
                 ctx.fillStyle = "red";
                 ctx.fillRect(this.x, this.y, this.width, this.height);
             }
         }
 
-        // Game loop
+        class Deer {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * (canvas.height - 100);
+                this.width = 80;
+                this.height = 80;
+            }
+
+            draw() {
+                ctx.drawImage(deerImage, this.x, this.y, this.width, this.height);
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * (canvas.height - 100);
+            }
+        }
+
+        const deer = new Deer();
+
         function gameLoop() {
             if (gameOver) {
                 showUsernameForm();
                 return;
             }
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear canvas
-            ctx.drawImage(deerImage, deerX, deerY, 50, 50);  // Draw the deer image
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            deer.draw();
 
             // Update and draw bullets
             for (let i = 0; i < bullets.length; i++) {
                 bullets[i].update();
                 bullets[i].draw();
+
+                // Check if bullet hits the deer
+                if (bullets[i].x < deer.x + deer.width &&
+                    bullets[i].x + bullets[i].width > deer.x &&
+                    bullets[i].y < deer.y + deer.height &&
+                    bullets[i].y + bullets[i].height > deer.y) {
+
+                    score++;
+                    bullets.splice(i, 1); // Remove bullet
+                    deer.reset();
+                    i--; // Adjust index after removal
+                }
+
+                // Remove bullet if it goes out of bounds
                 if (bullets[i].y < 0) {
                     bullets.splice(i, 1);
                     i--;
                 }
             }
 
-            // Check for bullet collision with the deer
-            for (let i = 0; i < bullets.length; i++) {
-                if (bullets[i].x < deerX + 50 && bullets[i].x + bullets[i].width > deerX &&
-                    bullets[i].y < deerY + 50 && bullets[i].y + bullets[i].height > deerY) {
-                    score++;
-                    bullets.splice(i, 1);  // Remove bullet after collision
-                    i--;
-                    deerX = Math.random() * canvas.width;
-                    deerY = Math.random() * canvas.height / 2;
-                }
-            }
-
-            document.getElementById("score").textContent = `Score: ${score}`;  // Update score
+            // Update the score
+            document.getElementById("score").textContent = `Score: ${score}`;
             requestAnimationFrame(gameLoop);
         }
 
@@ -131,25 +150,23 @@
             }
         });
 
-        // Show username form when game is over
+        // Show the username input form after the game ends
         function showUsernameForm() {
             document.getElementById("usernameForm").style.display = "block";
         }
 
-        // Unlock purchase after entering username
+        // Handle unlocking the purchase page
         function unlockPage() {
             const username = document.getElementById("usernameInput").value;
             if (username) {
-                window.location.href = `https://elmonx.com/${username}/purchase`;  // Replace with actual URL
+                window.location.href = `https://elmonx.com/${username}/purchase`;
             } else {
                 alert("Please enter a valid username.");
             }
         }
 
-        // Start the game loop once the image is loaded
-        deerImage.onload = function() {
-            gameLoop();
-        };
+        // Start the game
+        gameLoop();
     </script>
 </body>
 </html>
